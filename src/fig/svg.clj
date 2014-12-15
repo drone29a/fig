@@ -4,8 +4,7 @@
                                       element
                                       emit-str]]
             [clojure.string :refer [join]]
-            [schema.core :as sc]
-            [schema.macros :as sm])
+            [schema.core :as s])
   (:import [clojure.data.xml Element]
            [org.w3c.dom Document]
            [java.io ByteArrayInputStream InputStream]
@@ -13,44 +12,51 @@
            [org.apache.batik.dom.svg SAXSVGDocumentFactory]
            [org.apache.batik.util XMLResourceDescriptor]))
 
-(def Color sc/Str)
-(def Props {sc/Keyword (sc/either sc/Str sc/Num)})
+(def Color s/Str)
+(def Props {s/Keyword (s/either s/Str s/Num)})
 
 
-(sm/defn string-input-stream :- InputStream
-  [s :- sc/Str]
+(s/defn string-input-stream :- InputStream
+  [s :- s/Str]
   (ByteArrayInputStream. (-> (Charset/forName "ASCII")
                              (.encode s)
                              (.array))))
 
-(sm/defn xml-doc :- Document
+(s/defn xml-doc :- Document
   [root :- Element]
   (let [factory (SAXSVGDocumentFactory. (XMLResourceDescriptor/getXMLParserClassName))]
     (.createDocument factory
                      "foo"
                      (create-input-stream (emit-str root)))))
 
-(sm/defn svg :- Element
+(s/defn svg :- Element
   [content :- [Element]]
   (element :svg {:xmlns "http://www.w3.org/2000/svg"
                  :xmlns:xlink "http://www.w3.org/1999/xlink"
                  :xmlns:svg "http://www.w3.org/2000/svg"}
            content))
 
-(sm/defn style :- sc/Str
+(s/defn style :- s/Str
   [props :- Props]
   (->> props
        (map (fn [[k v]] (format "%s: %s" (name k) (str v))))
        (join ";")))
 
-(sm/defn rect :- Element
-  [x :- sc/Num
-   y :- sc/Num
-   width :- sc/Num
-   height :- sc/Num
+(s/defn rect :- Element
+  [x :- s/Num
+   y :- s/Num
+   width :- s/Num
+   height :- s/Num
    style-props :- Props]
   (element :rect {:x x
                   :y y
                   :width width
                   :height height
                   :style (style style-props)}))
+
+(s/defn point :- Element
+  [x :- s/Num
+   y :- s/Num
+   size :- s/Num
+   shape :- s/Keyword]
+  nil)
